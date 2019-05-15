@@ -8,7 +8,8 @@ const passport = require('koa-passport')
 const keys = require("../../config/key")
 // 引入user
 const user = require("../../modules/User")
-
+// 引入验证前台前台传过来的字段合法检测
+const validatorRegister=require("../../validator/register")
 
 // @接口名 GET api/users/test
 // @接口说明  测试接口地址
@@ -24,12 +25,19 @@ router.get("/test", async (ctx) => {
 // @接口开放 接口是公开的
 router.post("/register", async (ctx) => {
     // ctx.status=200;
+
+    let {errors,isValid}=validatorRegister(ctx.request.body)
+    if(!isValid){
+        ctx.status=400
+        ctx.body=errors
+        return;
+    }
     // ctx.request.body 前端传递的注册信息
     // 存储至数据库
+    // 第一步查找邮箱是否被注册
     const findResult = await user.find({
         email: ctx.request.body.email
     })
-
     if (findResult.length > 0) {
         // 如果已经注册了
         ctx.status = 500
@@ -73,7 +81,7 @@ router.post('/login', async (ctx) => {
     })
     let password = ctx.request.body.password
     let users = findResult[0]
-    console.log(findResult)
+    // console.log(findResult)
     if (findResult.length > 0) {
         // 查询到此邮箱对应用户
         //验证密码是否正确
@@ -122,9 +130,13 @@ router.post('/login', async (ctx) => {
 // @接口名 GET api/users/usermsg
 // @接口说明  返回用户接口信息接口地址
 // @接口开放 接口是私有的
-router.get("/usermsg", "token验证", async (ctx) => {
-    ctx.body = {
-        success: true
+router.get("/usermsg", passport.authenticate('jwt', { session: false }), async (ctx) => {
+    ctx.body = ctx.state.user//此时返回参数包含password
+    ctx.body={
+        id:ctx.state.user.id,
+        name:ctx.state.user.name,
+        email:ctx.state.user.email,
+        avatar:ctx.state.user.avatar
     }
 })
 module.exports = router.routes()

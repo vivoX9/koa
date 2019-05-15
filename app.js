@@ -5,7 +5,7 @@ const app = new koa() //实例化koa
 const router = new koaRouter() //实例化KoaRouter路由
 const db = require("./config/key").mongoURL //引入mongoDB
 const users = require("./routes/api/users") //引入user用户api
-const passport = require('koa-passport')//引入解析token模块
+const passport = require('koa-passport')//引入验证邮箱密码token是否正确模块
 const bodyParser = require("koa-bodyparser") //引入koa-bodyparse，前端传的post数据都可以解析
 // 连接mongoose
 mongoose.connect(db, {
