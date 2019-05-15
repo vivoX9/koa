@@ -1,8 +1,11 @@
 const koaRouter = require("koa-router")
 const router = new koaRouter()
 const tools = require("../../config/tools")
-const bcrypt = require("bcryptjs")
+const bcrypt = require("bcryptjs") //加密
 const gravatar = require('gravatar'); //全球公认头像
+const jwt = require("jsonwebtoken") //生成token
+const passport = require('koa-passport')
+const keys = require("../../config/key")
 // 引入user
 const user = require("../../modules/User")
 
@@ -78,9 +81,27 @@ router.post('/login', async (ctx) => {
         if (checkPassword) {
             // 如果密码正确
             // 返回token
+            // 生成token 
+            let tokenData = {
+                id: users.id,
+                name: users.name,
+                avatar: users.avatar
+            }
+            // 第一个参数是信息内容,第二个参数关键字，第三个参数为过期时间（1小时）
+            // 注意第三个参数key如果直接设置秒数的话必须是expiresIn;如果是时间戳形式
+            /**
+             *  jwt.sign({
+                    exp: Math.floor(Date.now() / 1000) + (60 * 60),
+                    data: 'foobar'
+                }, 'secret'); 
+            */
+            let token = jwt.sign(tokenData, keys.secretKey, {
+                expiresIn: 3600
+            })
             ctx.status = 200
             ctx.body = {
-                success: true
+                success: true,
+                token: "Bearer " + token
             }
         } else {
             // 如果密码错误
@@ -95,6 +116,15 @@ router.post('/login', async (ctx) => {
         ctx.body = {
             eamil: "用户不存在!"
         }
+    }
+})
+
+// @接口名 GET api/users/usermsg
+// @接口说明  返回用户接口信息接口地址
+// @接口开放 接口是私有的
+router.get("/usermsg", "token验证", async (ctx) => {
+    ctx.body = {
+        success: true
     }
 })
 module.exports = router.routes()
