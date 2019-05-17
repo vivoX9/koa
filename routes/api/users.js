@@ -1,3 +1,4 @@
+// 注册登录接口
 const koaRouter = require("koa-router")
 const router = new koaRouter()
 const tools = require("../../config/tools")
@@ -10,6 +11,7 @@ const keys = require("../../config/key")
 const user = require("../../modules/User")
 // 引入验证前台前台传过来的字段合法检测
 const validatorRegister=require("../../validator/register")
+const validatorLogin=require("../../validator/login")
 
 // @接口名 GET api/users/test
 // @接口说明  测试接口地址
@@ -75,6 +77,13 @@ router.post("/register", async (ctx) => {
 // @接口说明  登录接口地址
 // @接口开放 接口是公开的
 router.post('/login', async (ctx) => {
+    let {errors,isValid}=validatorLogin(ctx.request.body)
+    if(!isValid){
+        ctx.status=400
+        ctx.body=errors
+        return;
+    }
+
     // 第一步查询邮箱是否存在
     let findResult = await user.find({
         email: ctx.request.body.email

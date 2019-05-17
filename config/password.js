@@ -5,6 +5,7 @@ let opts = {}
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = keys.secretKey; //关键字，此处从key.js里引入
 const mongoose=require("mongoose")
+// 链接一个表为users
 const users=mongoose.model("users")
 module.exports = passport => {
     // 因为passport是在app.js里引入的，所以，一运行项目的时候就会执行
